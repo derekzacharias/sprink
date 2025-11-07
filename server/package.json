@@ -1,0 +1,25 @@
+{
+  "name": "smart-sprinkler-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "lint": "echo 'no linter configured'"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.1",
+    "mqtt": "^5.10.1",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.7.5",
+    "twilio": "^5.3.4"
+  }
+}
+

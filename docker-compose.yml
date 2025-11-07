@@ -1,0 +1,32 @@
+services:
+  mongo:
+    image: mongo:4.4
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+
+  server:
+    build: ./server
+    env_file:
+      - server/.env
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo:27017/sprinkler
+      - JWT_SECRET=change_me
+      - MQTT_URL=mqtt://mosquitto:1883
+    depends_on:
+      - mongo
+      - mosquitto
+    ports:
+      - "3001:3001"
+
+volumes:
+  mongo-data:
