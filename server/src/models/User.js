@@ -14,8 +14,11 @@ const userSchema = new mongoose.Schema(
       weather: {
         cityId: { type: String },
         lat: { type: Number },
-        lon: { type: Number }
-      }
+        lon: { type: Number },
+        zip: { type: String },
+        country: { type: String, default: 'US' }
+      },
+      smartMode: { type: Boolean, default: true }
     }
   },
   { timestamps: true }

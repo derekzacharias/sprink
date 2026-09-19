@@ -11,14 +11,12 @@ router.get('/settings', async (req, res) => {
 });
 
 router.put('/settings', async (req, res) => {
-  const { weather } = req.body || {};
-  const user = await User.findByIdAndUpdate(
-    req.user.id,
-    { $set: { 'settings.weather': weather || {} } },
-    { new: true }
-  ).lean();
+  const { weather, smartMode } = req.body || {};
+  const set = {};
+  if (weather !== undefined) set['settings.weather'] = weather || {};
+  if (smartMode !== undefined) set['settings.smartMode'] = !!smartMode;
+  const user = await User.findByIdAndUpdate(req.user.id, { $set: set }, { new: true }).lean();
   res.json(user?.settings || {});
 });
 
 export default router;
-

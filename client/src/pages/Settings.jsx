@@ -3,7 +3,7 @@ import api from '../services/api'
 
 export default function Settings() {
   const [loading, setLoading] = useState(true)
-  const [weather, setWeather] = useState({ cityId: '', lat: '', lon: '' })
+  const [weather, setWeather] = useState({ cityId: '', lat: '', lon: '', zip: '', country: 'US' })
   const [status, setStatus] = useState('')
 
   useEffect(() => {
@@ -11,7 +11,7 @@ export default function Settings() {
       try {
         const { data } = await api.get('/me/settings')
         const w = data?.weather || {}
-        setWeather({ cityId: w.cityId || '', lat: w.lat ?? '', lon: w.lon ?? '' })
+        setWeather({ cityId: w.cityId || '', lat: w.lat ?? '', lon: w.lon ?? '', zip: w.zip || '', country: w.country || 'US' })
       } finally { setLoading(false) }
     })()
   }, [])
@@ -34,6 +34,8 @@ export default function Settings() {
     try {
       const body = { weather: {
         cityId: weather.cityId || undefined,
+        zip: weather.zip || undefined,
+        country: weather.country || undefined,
         lat: weather.lat === '' ? undefined : Number(weather.lat),
         lon: weather.lon === '' ? undefined : Number(weather.lon)
       } }
@@ -54,6 +56,14 @@ export default function Settings() {
             <label className="text-sm">City ID
               <input className="border rounded-xl px-3 py-2 w-full" placeholder="OpenWeather City ID" value={weather.cityId}
                      onChange={e=>setWeather(w=>({...w, cityId: e.target.value}))} />
+            </label>
+            <label className="text-sm">ZIP (w/ country)
+              <div className="flex gap-2">
+                <input className="border rounded-xl px-3 py-2 w-full" placeholder="e.g., 94103" value={weather.zip}
+                       onChange={e=>setWeather(w=>({...w, zip: e.target.value}))} />
+                <input className="border rounded-xl px-3 py-2 w-24" placeholder="US" value={weather.country}
+                       onChange={e=>setWeather(w=>({...w, country: e.target.value}))} />
+              </div>
             </label>
             <div className="flex gap-3">
               <label className="text-sm flex-1">Lat
@@ -76,4 +86,3 @@ export default function Settings() {
     </div>
   )
 }
-

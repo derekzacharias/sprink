@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import Zone from '../models/Zone.js';
 import { requireAuth } from '../middleware/auth.js';
-import { turnZoneOn, turnZoneOff } from '../services/zoneControl.js';
+import { turnZoneOn, turnZoneOff, getActiveEnds } from '../services/zoneControl.js';
 
 const router = Router();
 
@@ -15,6 +15,11 @@ router.get('/', async (req, res) => {
     zones = await Zone.find({ userId: req.user.id }).sort('zoneNumber');
   }
   res.json(zones);
+});
+
+router.get('/active', async (req, res) => {
+  const active = getActiveEnds(req.user.id);
+  res.json(active);
 });
 
 router.post('/', async (req, res) => {
@@ -47,6 +52,7 @@ router.post('/:zoneNumber/on', async (req, res) => {
     await turnZoneOn(req.app, req.user.id, Number(zoneNumber), durationMin, 'manual');
     res.json({ ok: true });
   } catch (e) {
+    console.error(`[zones] turn on ${zoneNumber} failed:`, e);
     res.status(500).json({ error: 'Failed to turn on' });
   }
 });
@@ -57,6 +63,7 @@ router.post('/:zoneNumber/off', async (req, res) => {
     await turnZoneOff(req.app, req.user.id, Number(zoneNumber), 'manual');
     res.json({ ok: true });
   } catch (e) {
+    console.error(`[zones] turn off ${zoneNumber} failed:`, e);
     res.status(500).json({ error: 'Failed to turn off' });
   }
 });

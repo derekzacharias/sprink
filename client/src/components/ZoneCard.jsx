@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import api from '../services/api'
 
 export default function ZoneCard({ zone, onToggle }) {
@@ -6,6 +6,17 @@ export default function ZoneCard({ zone, onToggle }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(zone.name || `Zone ${zone.zoneNumber}`)
   const [duration, setDuration] = useState(zone.defaultDurationMin || 10)
+  const [now, setNow] = useState(Date.now())
+
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t) }, [])
+  const remaining = useMemo(() => {
+    if (!zone.endsAt) return null
+    const ms = new Date(zone.endsAt).getTime() - now
+    if (ms <= 0) return null
+    const m = Math.floor(ms / 60000)
+    const s = Math.floor((ms % 60000) / 1000)
+    return `${m}:${String(s).padStart(2,'0')}`
+  }, [zone.endsAt, now])
 
   async function save() {
     await api.put(`/zones/${zone._id}`, { name, defaultDurationMin: Number(duration) })
@@ -36,12 +47,18 @@ export default function ZoneCard({ zone, onToggle }) {
           <button className="btn btn-primary" onClick={save}>Save</button>
         </div>
       ) : (
-        <button
-          className={`btn ${isOn ? 'btn-ghost' : 'btn-primary'}`}
-          onClick={() => onToggle(zone.zoneNumber, !isOn)}
-        >
-          {isOn ? 'Turn Off' : 'Water Now'}
-        </button>
+        <div className="flex gap-2 items-center">
+          {!isOn ? (
+            <>
+              <button className="btn btn-primary" onClick={() => onToggle(zone.zoneNumber, true, 5)}>5m</button>
+              <button className="btn btn-primary" onClick={() => onToggle(zone.zoneNumber, true, 10)}>10m</button>
+              <button className="btn btn-primary" onClick={() => onToggle(zone.zoneNumber, true, 15)}>15m</button>
+            </>
+          ) : (
+            <button className="btn btn-ghost" onClick={() => onToggle(zone.zoneNumber, false)}>Stop</button>
+          )}
+          {remaining && <span className="text-xs text-gray-600">{remaining} left</span>}
+        </div>
       )}
 
       {zone.lastUsedAt && (

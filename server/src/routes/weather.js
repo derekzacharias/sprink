@@ -10,9 +10,10 @@ router.get('/', requireAuth, async (req, res) => {
     const user = await User.findById(req.user.id).lean();
     const loc = user?.settings?.weather || {};
     const data = await getWeatherSummary(loc);
-    res.json(data || {});
+    return res.json(data || {});
   } catch (e) {
-    res.status(500).json({ error: 'Failed to fetch weather' });
+    // Be lenient in MVP: return empty object instead of 500 to avoid UI errors
+    return res.json({});
   }
 });
 

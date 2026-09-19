@@ -6,6 +6,10 @@ export async function getWeatherSummary(loc) {
   let url = null;
   if (loc?.lat != null && loc?.lon != null) {
     url = `https://api.openweathermap.org/data/2.5/weather?lat=${loc.lat}&lon=${loc.lon}&appid=${apiKey}&units=metric`;
+  } else if (loc?.zip) {
+    const country = loc?.country || 'US';
+    const zipParam = encodeURIComponent(String(loc.zip).trim());
+    url = `https://api.openweathermap.org/data/2.5/weather?zip=${zipParam},${country}&appid=${apiKey}&units=metric`;
   } else if (loc?.cityId) {
     url = `https://api.openweathermap.org/data/2.5/weather?id=${loc.cityId}&appid=${apiKey}&units=metric`;
   } else if (process.env.OPENWEATHER_CITY_ID) {

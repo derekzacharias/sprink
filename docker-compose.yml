@@ -6,27 +6,44 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   mosquitto:
     image: eclipse-mosquitto:2
     restart: unless-stopped
     ports:
       - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
 
   server:
     build: ./server
+    restart: unless-stopped
     env_file:
       - server/.env
     environment:
       - PORT=3001
+      # Container-network hostnames. These intentionally differ from the
+      # localhost values you'd use when running the server natively.
       - MONGO_URI=mongodb://mongo:27017/sprinkler
-      - JWT_SECRET=change_me
       - MQTT_URL=mqtt://mosquitto:1883
+      # NOTE: JWT_SECRET deliberately NOT set here. It used to be pinned to
+      # "change_me", which silently overrode the real secret in server/.env
+      # and invalidated every previously issued login token.
     depends_on:
-      - mongo
-      - mosquitto
+      mongo:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
     ports:
       - "3001:3001"
 
 volumes:
   mongo-data:
+  mosquitto-data:
